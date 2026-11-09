@@ -1,9 +1,10 @@
 /**
  * Resource categories BookLoop is validating.
  *
- * TEMPORARY: display-only copy for the Phase 1 shell. The canonical list moves
- * to the `categories` table in BL-002 (Supabase foundation); do not build
- * business logic on these constants.
+ * TEMPORARY: display-only copy for the marketing home page. Since BL-002 the
+ * canonical list (including permitted listing kinds) is the `categories`
+ * table; keep this copy in sync until pages read categories from the
+ * database (marketplace phase). Never build business logic on these constants.
  */
 
 export type ListingKind = "physical" | "digital";

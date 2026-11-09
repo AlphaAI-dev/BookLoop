@@ -12,8 +12,9 @@ discover and sell academic resources, including:
 Listings are either **physical** (condition, photos, pickup/shipping) or **digital** (private,
 access-controlled files the seller has the right to distribute).
 
-> **Status:** Phase 1 (project foundation and design system). Marketplace, auth, payments and
-> fulfilment are built in later phases. See [`docs/implementation-plan.md`](docs/implementation-plan.md).
+> **Status:** Phase 2 (Supabase foundation: schema, RLS, storage, typed clients). Marketplace,
+> auth UI, payments and fulfilment are built in later phases. See
+> [`docs/implementation-plan.md`](docs/implementation-plan.md).
 
 ## Tech stack
 
@@ -22,10 +23,10 @@ access-controlled files the seller has the right to distribute).
 | Framework       | Next.js 16 (App Router, Cache Components, Turbopack)             |
 | Language        | TypeScript (strict)                                              |
 | Styling         | Tailwind CSS v4, shadcn/ui (Radix primitives), lucide-react      |
-| Database / Auth | Supabase PostgreSQL + Supabase Auth _(from BL-002)_              |
-| File storage    | Supabase Storage; private bucket for paid files _(from BL-002)_  |
+| Database / Auth | Supabase PostgreSQL + Supabase Auth (`@supabase/ssr`)            |
+| File storage    | Supabase Storage; private bucket for paid files                  |
 | Payments        | Razorpay, **test mode only** _(Phase 7)_                         |
-| Validation      | Zod _(added with the first server input)_                        |
+| Validation      | Zod                                                              |
 | Deployment      | Replit                                                           |
 
 Locked decisions and team rules are in [`BOOKLOOP_TEAM_PLAYBOOK.md`](BOOKLOOP_TEAM_PLAYBOOK.md).
@@ -34,6 +35,7 @@ Locked decisions and team rules are in [`BOOKLOOP_TEAM_PLAYBOOK.md`](BOOKLOOP_TE
 
 - Node.js **20.9 or later** (developed on Node 22)
 - npm (the repository uses `package-lock.json`; do not mix package managers)
+- Docker, only if you want to run the local Supabase stack (migrations and policy tests)
 
 ## Getting started
 
@@ -45,7 +47,27 @@ npm run dev
 
 Open <http://localhost:3000>.
 
-Phase 1 does not read any environment variables, so the app runs without `.env.local`.
+Pages that don't touch Supabase run without `.env.local`. Anything that creates a Supabase client
+needs `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (see below).
+
+### Supabase
+
+Point the app at the dev project or at the local stack, then verify the connection:
+
+```bash
+npm run supabase:verify   # read-only: env, Auth health, migrations applied, RLS active
+```
+
+To work on the database locally (Docker required):
+
+```bash
+npm run db:start   # local stack with migrations + local-only demo seed
+npm run db:test    # pgTAP policy tests
+```
+
+Migrations are applied to the shared remote project only by the database owner after review.
+See [`docs/database-migration-plan.md`](docs/database-migration-plan.md) for the schema, RLS and
+storage policies and the full workflow.
 
 ### On Replit
 
@@ -65,9 +87,15 @@ Phase 1 does not read any environment variables, so the app runs without `.env.l
 | `npm run lint`      | ESLint (`eslint-config-next`: core-web-vitals + TypeScript)     |
 | `npm run typecheck` | Generate Next.js route types, then `tsc --noEmit`               |
 | `npm run check`     | lint + typecheck + build (run before every PR)                  |
+| `npm run db:start` / `db:stop` | Start/stop the local Supabase stack (Docker)          |
+| `npm run db:reset`  | Rebuild the local DB from migrations + seed                     |
+| `npm run db:test`   | pgTAP database policy tests (`supabase test db`)                |
+| `npm run db:lint`   | Supabase schema linter                                          |
+| `npm run db:types`  | Regenerate `src/lib/supabase/database.types.ts` from the local DB |
+| `npm run supabase:verify` | Read-only connection check against the configured project |
 
-A test runner has not been selected yet; see the open decisions in
-[`docs/implementation-plan.md`](docs/implementation-plan.md).
+Database policies are tested with pgTAP. A JavaScript unit-test runner has not been selected yet;
+see the open decisions in [`docs/implementation-plan.md`](docs/implementation-plan.md).
 
 ## Project structure
 
@@ -80,10 +108,18 @@ src/
     shared/            Reusable composite components (page header, empty states)
   config/              Static, typed configuration (site metadata, navigation)
   lib/                 Framework-agnostic helpers (e.g. `cn`)
+    supabase/          Browser client, public env validation, generated DB types
+  server/
+    db/                Server-only Supabase client (cookies, RLS as the signed-in user)
+supabase/
+  config.toml          Local stack configuration
+  migrations/          Versioned SQL migrations (schema, RLS, storage)
+  seed.sql             Local-only demo data
+  tests/database/      pgTAP policy tests
+scripts/               Operational scripts (connection verification)
 ```
 
-Directories added in later phases (`features/`, `server/`, `supabase/migrations/` …) are described
-in [`docs/architecture.md`](docs/architecture.md).
+More directories are added as features land; see [`docs/architecture.md`](docs/architecture.md).
 
 ## Environment variables
 

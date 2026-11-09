@@ -8,7 +8,7 @@ one or more `feature/*` branches with their own PR into `Develop`.
 | -------------- | -------------- | ---- | ----------------- | ---- |
 | 0 | — | Repo inspection, branch setup, conventions | `feature/project-foundation` | Clean baseline ✅ |
 | 1 | 1 | Next.js foundation, responsive shell, design system | `feature/project-foundation` | App runs/builds ✅ (this PR) |
-| 2 | (2) | Supabase clients, typed env, migrations, RLS, storage, seed | `feature/supabase-foundation` (BL-002) | DB/security tests |
+| 2 | (2) | Supabase clients, typed env, migrations, RLS, storage, seed | `feature/supabase-foundation` (BL-002) | DB/security tests ✅ (this PR) |
 | 3 | 2 | Auth (signup, verification, login, logout) and profiles | `feature/supabase-auth` | Auth tests |
 | 4 | 3, 5 | Categories, search and filters, listing detail | `feature/marketplace-search` (after BL-003 shell) | Search/detail tests |
 | 5 | 4 | Physical and digital listing workflows, uploads | `feature/listings` | Listing/upload tests |
@@ -39,21 +39,40 @@ Done:
 Exit criteria: `npm run dev` serves the app; `lint`, `typecheck` and `build` pass; owner reviews
 the PR into `Develop`.
 
-## Next milestone — BL-002 Supabase foundation (needs owner input first)
+## Milestone 2 — "Supabase foundation" (BL-002, this PR)
 
-Prerequisites from the owner:
+Done:
 
-1. Create the Supabase dev/pilot project and put its URL and keys in `.env.local` / Replit Secrets.
-2. Decide on the test tooling (see below).
-3. Answer the open questions in [`database-migration-plan.md`](database-migration-plan.md).
+- Supabase CLI config (`supabase/config.toml`) and npm `db:*` scripts.
+- Typed browser and server clients (`@supabase/ssr`), Zod-validated public env that refuses
+  service-role keys, and generated `Database` types.
+- Migrations 1–4: helpers/enums, profiles + admin role model, categories with permitted listing
+  kinds, and storage buckets + policies. RLS and narrowed grants on every table.
+- Local-only seed (demo student, creator and admin).
+- pgTAP suite: 64 assertions, checked by mutation.
+- `npm run supabase:verify` connection check.
+- Database documentation rewritten; the playbook's branch name standardised to `Develop`.
+
+Owner actions after merge:
+
+1. Add `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` to `.env.local` and Replit
+   Secrets.
+2. The designated database owner applies migrations to the dev project (`supabase db push`),
+   sets the hosted Auth settings, then runs `npm run supabase:verify`.
+3. Grant the first admin with SQL (see the database doc).
+
+## Next milestone — Phase 3: auth and profiles (`feature/supabase-auth`)
+
+Signup with email verification, login and logout, `src/proxy.ts` session refresh, and profile
+editing (Zod-validated server actions, avatar upload into the owner's folder).
 
 ## Decisions needed from the owner
 
 | # | Decision | Recommendation |
 | - | -------- | -------------- |
-| 1 | Test framework | Vitest for unit tests, pgTAP via `supabase test db` for RLS (no npm dependency), Playwright for e2e |
-| 2 | Integration branch name (`Develop` vs `develop`) | Rename one so the playbook and GitHub match |
-| 3 | Category ↔ listing-kind rules | Proposed: textbooks and equipment physical only (copyright/nature); notes and exam prep either; digital resources digital only |
+| 1 | Test framework (JS) | Vitest for unit tests and Playwright for e2e. pgTAP is in place for the database since BL-002 |
+| 2 | ~~Integration branch name~~ | Resolved in BL-002: `Develop` |
+| 3 | ~~Category ↔ listing-kind rules~~ | Resolved in BL-002: approved mapping, stored in `categories.allowed_listing_kinds` |
 | 4 | Formatting | Add Prettier + Tailwind class sorting so agents produce consistent diffs |
 | 5 | CI | A GitHub Actions workflow running `npm run check` on PRs into `Develop` |
 | 6 | Phase order for moderation | Reporting/takedown before or with fulfilment (P0) |

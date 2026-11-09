@@ -1,6 +1,6 @@
 # BookLoop Engineering Team Playbook
 
-**Version:** 1.0 \| **Date:** 10 November 2026 \| **Status:** Working
+**Version:** 1.1 \| **Date:** 10 November 2026 \| **Status:** Working
 source of truth
 
 ## 1. Purpose
@@ -138,7 +138,8 @@ names.
 ## 5. Git and branch policy
 
 Branches: - `main`: stable, deployable; protected; no direct agent
-pushes. - `develop`: integration branch. - `feature/<name>`: one
+pushes. - `Develop`: integration branch (the GitHub branch name is
+`Develop`, capital D). - `feature/<name>`: one
 independently reviewable feature. - `fix/<name>`: one specific defect. -
 `chore/<name>`: maintenance.
 
@@ -147,9 +148,9 @@ Examples: `feature/project-foundation`, `feature/supabase-auth`,
 `feature/listings`, `feature/dashboard`, `feature/payments`,
 `feature/ai`.
 
-Create `develop` from `main` once. Create feature branches from the
-latest `develop`. Merge feature PRs into `develop`, not directly into
-`main`. Merge `develop` into `main` only after integration acceptance.
+Create `Develop` from `main` once. Create feature branches from the
+latest `Develop`. Merge feature PRs into `Develop`, not directly into
+`main`. Merge `Develop` into `main` only after integration acceptance.
 
 Agent isolation: - One agent owns one feature branch at a time. - Never
 assign two agents to the same branch simultaneously. - Avoid concurrent
@@ -444,7 +445,7 @@ approved landing page without permission.
 
 Acceptance: - Existing files preserved unless changes are explained. -
 `npm run dev` works. - lint, typecheck and build pass. - No secrets
-committed. - PR opened against `develop`.
+committed. - PR opened against `Develop`.
 
 ### BL-002 --- Supabase foundation
 
@@ -487,7 +488,7 @@ renders or an agent says it is complete.
 ## 14. First actions for the owner
 
 1.  Inspect the existing GitHub repository.
-2.  Create `develop` from `main`.
+2.  Create `Develop` from `main`.
 3.  Clone the repo locally or open that same repo in Replit.
 4.  Check Node.js is 20.9 or later.
 5.  Create a Supabase Free project for development/pilot.

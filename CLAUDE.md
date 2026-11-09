@@ -14,7 +14,16 @@ npm run lint        # ESLint
 npm run typecheck   # next typegen && tsc --noEmit
 npm run build       # production build
 npm run check       # all three above — must pass before a PR
+
+npm run db:start    # local Supabase stack (Docker); db:stop to stop
+npm run db:reset    # rebuild local DB from migrations + seed
+npm run db:test     # pgTAP policy tests — must pass for any schema/policy change
+npm run db:lint     # schema linter
+npm run db:types    # regenerate src/lib/supabase/database.types.ts after schema changes
+npm run supabase:verify  # read-only connection check
 ```
+
+If Docker can't pull from `public.ecr.aws`, set `SUPABASE_INTERNAL_IMAGE_REGISTRY=docker.io`.
 
 Never report a command as passing unless it ran and passed in this session.
 
@@ -40,6 +49,19 @@ See [`docs/architecture.md`](docs/architecture.md). In short:
 - `src/lib` — framework-agnostic helpers; `src/config` — static typed config.
 - `src/components/ui` — shadcn/ui primitives; `layout/` — app shell; `shared/` — composites.
 - Import with the `@/` alias. Server Components by default; add `"use client"` only when needed.
+- Supabase: `createSupabaseBrowserClient()` (`src/lib/supabase/client.ts`) in Client Components,
+  `createSupabaseServerClient()` (`src/server/db/supabase.ts`) on the server. Both use the anon key,
+  so RLS always applies. Render components that use the server client inside `<Suspense>`.
+  There is no service-role client yet; adding one needs its own server-only module and review.
+
+## Database rules (see docs/database-migration-plan.md)
+
+- Every new table: enable RLS **and** narrow table grants in the same migration; add pgTAP tests,
+  including the negative cases. The RLS guard test fails if any `public` table lacks RLS.
+- Internal/security-definer functions go in the unexposed `private` schema with `search_path = ''`.
+- Never edit a merged migration; add a new one. Never run `seed.sql` against a remote project.
+- Storage paths start with the owner's uid. `digital-resources` stays private, with no buyer
+  read policies (signed URLs are issued server-side after an entitlement check).
 
 ## Non-negotiables
 

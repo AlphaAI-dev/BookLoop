@@ -18,11 +18,13 @@ export const siteConfig = {
     "Buy and sell used textbooks, original study notes, academic equipment and exam-prep resources from students, educators and independent creators.",
   mainNav: [
     { title: "Browse", href: "/browse", description: "Discover textbooks, notes and more" },
+    { title: "Saved", href: "/saved", description: "Resources you want to revisit" },
     { title: "Sell", href: "/sell", description: "List a physical or digital resource" },
     { title: "How it works", href: "/#how-it-works" },
   ] satisfies NavItem[],
   footerNav: [
     { title: "Browse", href: "/browse" },
+    { title: "Saved", href: "/saved" },
     { title: "Sell", href: "/sell" },
     { title: "How it works", href: "/#how-it-works" },
   ] satisfies NavItem[],

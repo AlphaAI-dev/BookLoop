@@ -12,8 +12,9 @@ discover and sell academic resources, including:
 Listings are either **physical** (condition, photos, pickup/shipping) or **digital** (private,
 access-controlled files the seller has the right to distribute).
 
-> **Status:** Phase 2 (Supabase foundation: schema, RLS, storage, typed clients). Marketplace,
-> auth UI, payments and fulfilment are built in later phases. See
+> **Status:** BL-003 marketplace UI shell, built on the BL-001 app and BL-002 Supabase foundations.
+> Browsing, details, saved items and listing submission use sample data and browser-local storage.
+> Authentication, shared marketplace data, payments and fulfilment remain future work. See
 > [`docs/implementation-plan.md`](docs/implementation-plan.md).
 
 ## Tech stack
@@ -49,6 +50,21 @@ Open <http://localhost:3000>.
 
 Pages that don't touch Supabase run without `.env.local`. Anything that creates a Supabase client
 needs `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (see below).
+
+### Marketplace preview (BL-003)
+
+- `/browse`: search and filter the fictional sample listings and your local demo listings.
+- `/browse/[slug]`: resource details and save/unsave interactions.
+- `/saved`: saved resources in this browser.
+- `/sell`: validated physical or digital demo submission; no file is uploaded.
+
+Saved items and newly submitted demo listings use **localStorage in the current browser profile
+and site origin only**. They are not synced, backed up, or visible to other people; clearing
+browser data removes them. Preloaded listings are labelled **Sample listing**, and submissions
+are labelled **Local demo listing**. No marketplace operation currently calls Supabase.
+
+See [`docs/marketplace-ui.md`](docs/marketplace-ui.md) for the data boundary, limitations and the
+dependency-free Chromium smoke test.
 
 ### Supabase
 

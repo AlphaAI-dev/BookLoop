@@ -7,6 +7,8 @@ const eslintConfig = defineConfig([
   ...nextTs,
   // Override default ignores of eslint-config-next.
   globalIgnores([
+    // Replit-provided helper templates are not part of the application.
+    ".local/**",
     // Default ignores of eslint-config-next:
     ".next/**",
     "out/**",

@@ -24,6 +24,9 @@
 .DS_Store
 *.pem
 
+# Local agent memory is not part of the application or its PRs.
+/.agents/memory/
+
 # debug
 npm-debug.log*
 yarn-debug.log*

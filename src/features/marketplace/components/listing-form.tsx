@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2, Info, Plus, RotateCcw } from "lucide-react";
 import type { FormEvent } from "react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { resourceCategories, type ListingKind } from "@/config/categories";
 import { createDemoListing } from "@/features/marketplace/data/repository";
@@ -29,8 +29,13 @@ export function ListingForm() {
   const [submitError, setSubmitError] = useState("");
   const [createdSlug, setCreatedSlug] = useState("");
   const [touched, setTouched] = useState(false);
+  const errorSummaryRef = useRef<HTMLDivElement>(null);
   const selectedCategory = resourceCategories.find((category) => category.slug === values.categorySlug);
   const allowedKinds: readonly ListingKind[] = selectedCategory?.listingKinds ?? ["physical", "digital"];
+
+  useEffect(() => {
+    if (submitError) errorSummaryRef.current?.focus();
+  }, [submitError, errors]);
 
   function update<K extends FieldName>(field: K, value: string) {
     setValues((current) => ({ ...current, [field]: value }));
@@ -60,7 +65,6 @@ export function ListingForm() {
       }
       setErrors(nextErrors);
       setSubmitError("A few details need your attention before this demo listing can be added.");
-      document.getElementById("listing-errors")?.focus();
       return;
     }
 
@@ -99,7 +103,7 @@ export function ListingForm() {
   }
 
   return (
-    <main className="page-container pb-20">
+    <div className="page-container pb-20">
       <Link href="/browse" className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><ArrowLeft aria-hidden="true" className="size-4" /> Browse resources</Link>
       <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start">
         <div className="rounded-[1.75rem] border border-border bg-card p-5 sm:p-8">
@@ -114,30 +118,30 @@ export function ListingForm() {
               <div className="flex items-start gap-3"><CheckCircle2 aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-success" /><div><p className="font-semibold text-success">Your demo listing is ready</p><p className="mt-1 text-sm text-muted-foreground">It is stored locally in this browser and added to the browse shelf.</p><Link href={`/browse/${createdSlug}`} className="mt-3 inline-flex text-sm font-bold text-primary underline underline-offset-4">View your listing</Link></div></div>
             </div>
           )}
-          {submitError && <div id="listing-errors" tabIndex={-1} role="alert" className="mb-5 rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive focus:outline-none">{submitError}{Object.keys(errors).length > 0 && <ul className="mt-2 list-inside list-disc">{Object.entries(errors).map(([field, message]) => <li key={field}><a href={`#field-${field}`} className="underline underline-offset-2">{message}</a></li>)}</ul>}</div>}
+          {submitError && <div ref={errorSummaryRef} id="listing-errors" tabIndex={-1} role="alert" className="mb-5 rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive focus:outline-none">{submitError}{Object.keys(errors).length > 0 && <ul className="mt-2 list-inside list-disc">{Object.entries(errors).map(([field, message]) => <li key={field}><a href={`#field-${field}`} className="underline underline-offset-2">{message}</a></li>)}</ul>}</div>}
 
           <form onSubmit={handleSubmit} noValidate>
             <div className="grid gap-5 sm:grid-cols-2">
               <div className="sm:col-span-2">
                 <label htmlFor="field-title" className="text-sm font-semibold">Listing title <span className="text-destructive">*</span></label>
-                <input id="field-title" className={fieldClass("title")} value={values.title} onChange={(event) => update("title", event.target.value)} onBlur={() => setTouched(true)} placeholder="e.g. Linear algebra notes, semester 2" aria-invalid={Boolean(errors.title)} aria-describedby={errors.title ? "error-title" : undefined} />
+                <input required id="field-title" className={fieldClass("title")} value={values.title} onChange={(event) => update("title", event.target.value)} onBlur={() => setTouched(true)} placeholder="e.g. Linear algebra notes, semester 2" aria-invalid={Boolean(errors.title)} aria-describedby={errors.title ? "error-title" : undefined} />
                 {errors.title && <p id="error-title" className="mt-1.5 text-xs text-destructive">{errors.title}</p>}
               </div>
               <div className="sm:col-span-2">
                 <label htmlFor="field-description" className="text-sm font-semibold">What should the next student know? <span className="text-destructive">*</span></label>
-                <textarea id="field-description" className={`${fieldClass("description")} min-h-32 resize-y`} value={values.description} onChange={(event) => update("description", event.target.value)} placeholder="Share what’s included, what course it helped with, and any wear or useful context." aria-invalid={Boolean(errors.description)} aria-describedby={errors.description ? "error-description" : undefined} />
+                <textarea required id="field-description" className={`${fieldClass("description")} min-h-32 resize-y`} value={values.description} onChange={(event) => update("description", event.target.value)} placeholder="Share what’s included, what course it helped with, and any wear or useful context." aria-invalid={Boolean(errors.description)} aria-describedby={errors.description ? "error-description" : undefined} />
                 <div className="mt-1.5 flex justify-between gap-4"><p id="error-description" className="text-xs text-destructive">{errors.description}</p><p className="ml-auto text-xs text-muted-foreground">{values.description.length}/1,200</p></div>
               </div>
               <div>
                 <label htmlFor="field-categorySlug" className="text-sm font-semibold">Category <span className="text-destructive">*</span></label>
-                <select id="field-categorySlug" className={fieldClass("categorySlug")} value={values.categorySlug} onChange={(event) => { update("categorySlug", event.target.value); const cat = resourceCategories.find((item) => item.slug === event.target.value); if (cat && !cat.listingKinds.some((item) => item === values.kind)) update("kind", cat.listingKinds[0]); }} aria-invalid={Boolean(errors.categorySlug)} aria-describedby={errors.categorySlug ? "error-categorySlug" : undefined}>
+                <select required id="field-categorySlug" className={fieldClass("categorySlug")} value={values.categorySlug} onChange={(event) => { update("categorySlug", event.target.value); const cat = resourceCategories.find((item) => item.slug === event.target.value); if (cat && !cat.listingKinds.some((item) => item === values.kind)) update("kind", cat.listingKinds[0]); }} aria-invalid={Boolean(errors.categorySlug)} aria-describedby={errors.categorySlug ? "error-categorySlug" : undefined}>
                   <option value="">Choose a category</option>{resourceCategories.map((category) => <option key={category.slug} value={category.slug}>{category.name}</option>)}
                 </select>
                 {errors.categorySlug && <p id="error-categorySlug" className="mt-1.5 text-xs text-destructive">{errors.categorySlug}</p>}
               </div>
               <div>
                 <label htmlFor="field-kind" className="text-sm font-semibold">Resource kind <span className="text-destructive">*</span></label>
-                <select id="field-kind" className={fieldClass("kind")} value={values.kind} onChange={(event) => update("kind", event.target.value)} aria-invalid={Boolean(errors.kind)} aria-describedby={errors.kind ? "error-kind" : undefined}>
+                <select required id="field-kind" className={fieldClass("kind")} value={values.kind} onChange={(event) => update("kind", event.target.value)} aria-invalid={Boolean(errors.kind)} aria-describedby={errors.kind ? "error-kind" : undefined}>
                   {allowedKinds.some((item) => item === "physical") && <option value="physical">Physical item</option>}
                   {allowedKinds.some((item) => item === "digital") && <option value="digital">Digital resource</option>}
                 </select>
@@ -145,13 +149,13 @@ export function ListingForm() {
               </div>
               <div>
                 <label htmlFor="field-priceRupees" className="text-sm font-semibold">Price in rupees <span className="text-destructive">*</span></label>
-                <div className="relative"><span className="absolute top-1/2 left-3.5 -translate-y-1/2 text-sm text-muted-foreground">₹</span><input id="field-priceRupees" inputMode="decimal" className={`${fieldClass("priceRupees")} pl-8`} value={values.priceRupees} onChange={(event) => update("priceRupees", event.target.value)} placeholder="e.g. 120.00" aria-invalid={Boolean(errors.priceRupees)} aria-describedby={errors.priceRupees ? "error-priceRupees" : undefined} /></div>
+                <div className="relative"><span className="absolute top-1/2 left-3.5 -translate-y-1/2 text-sm text-muted-foreground">₹</span><input required id="field-priceRupees" inputMode="decimal" className={`${fieldClass("priceRupees")} pl-8`} value={values.priceRupees} onChange={(event) => update("priceRupees", event.target.value)} placeholder="e.g. 120.00" aria-invalid={Boolean(errors.priceRupees)} aria-describedby={errors.priceRupees ? "error-priceRupees" : undefined} /></div>
                 {errors.priceRupees && <p id="error-priceRupees" className="mt-1.5 text-xs text-destructive">{errors.priceRupees}</p>}
               </div>
               {values.kind === "physical" ? (
                 <div>
                   <label htmlFor="field-condition" className="text-sm font-semibold">Condition <span className="text-destructive">*</span></label>
-                  <select id="field-condition" className={fieldClass("condition")} value={values.condition} onChange={(event) => update("condition", event.target.value)} aria-invalid={Boolean(errors.condition)} aria-describedby={errors.condition ? "error-condition" : undefined}>
+                  <select required id="field-condition" className={fieldClass("condition")} value={values.condition} onChange={(event) => update("condition", event.target.value)} aria-invalid={Boolean(errors.condition)} aria-describedby={errors.condition ? "error-condition" : undefined}>
                     <option value="">Choose condition</option><option value="new">New</option><option value="like-new">Like new</option><option value="good">Good</option><option value="acceptable">Acceptable</option>
                   </select>
                   {errors.condition && <p id="error-condition" className="mt-1.5 text-xs text-destructive">{errors.condition}</p>}
@@ -182,6 +186,6 @@ export function ListingForm() {
           {touched && <p className="mt-5 border-t border-primary/10 pt-4 text-xs font-medium text-muted-foreground">Fields marked <span className="text-destructive">*</span> are required.</p>}
         </aside>
       </div>
-    </main>
+    </div>
   );
 }

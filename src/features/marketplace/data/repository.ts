@@ -35,6 +35,15 @@ export type StoreSnapshot<T> =
 
 const serverListingsSnapshot: StoreSnapshot<Listing[]> = { status: "loading" };
 const serverSavedIdsSnapshot: StoreSnapshot<string[]> = { status: "loading" };
+
+export function getServerListingsSnapshot(): StoreSnapshot<Listing[]> {
+  return serverListingsSnapshot;
+}
+
+export function getServerSavedIdsSnapshot(): StoreSnapshot<string[]> {
+  return serverSavedIdsSnapshot;
+}
+
 const listingsErrorSnapshot: StoreSnapshot<Listing[]> = {
   status: "error",
   message: "Saved demo listings could not be read. Check this browser's local storage settings.",
@@ -134,27 +143,16 @@ export function getSavedIdsSnapshot(): StoreSnapshot<string[]> {
 
 export function subscribeToMarketplace(onChange: () => void): () => void {
   if (typeof window === "undefined") return () => {};
-  const handleChange = () => {
-    lastListingsRaw = undefined;
-    listingsSnapshot = undefined;
-    lastSavedIdsRaw = undefined;
-    savedIdsSnapshot = undefined;
-    onChange();
-  };
 
-  window.addEventListener(marketplaceChangeEvent, handleChange);
-  window.addEventListener("storage", handleChange);
+  window.addEventListener(marketplaceChangeEvent, onChange);
+  window.addEventListener("storage", onChange);
   return () => {
-    window.removeEventListener(marketplaceChangeEvent, handleChange);
-    window.removeEventListener("storage", handleChange);
+    window.removeEventListener(marketplaceChangeEvent, onChange);
+    window.removeEventListener("storage", onChange);
   };
 }
 
 function notifyMarketplaceChanged() {
-  lastListingsRaw = undefined;
-  listingsSnapshot = undefined;
-  lastSavedIdsRaw = undefined;
-  savedIdsSnapshot = undefined;
   window.dispatchEvent(new CustomEvent(marketplaceChangeEvent));
 }
 

@@ -1,0 +1,1 @@
+- [Dependency setup side effects](dependency-setup.md) — reinstalling an existing package can rewrite pins and Replit config; inspect setup diffs.

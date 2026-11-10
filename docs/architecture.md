@@ -1,6 +1,7 @@
 # BookLoop architecture
 
-Status: proposed with BL-001 (Phase 1), updated in BL-002 (Supabase foundation). Changes need
+Status: proposed with BL-001 (Phase 1), updated in BL-002 (Supabase foundation) and BL-003
+(mock marketplace UI shell). Changes need
 project-owner approval (playbook §1, §3).
 
 ## 1. Repository assessment (at BL-001 start)
@@ -42,7 +43,7 @@ Defence in depth: every protected operation is checked in the service layer **an
 
 ## 3. Folder conventions
 
-Present after BL-002:
+Present after BL-003:
 
 ```
 src/app/                 App Router routes
@@ -50,6 +51,7 @@ src/components/ui/       shadcn/ui primitives
 src/components/layout/   Header, footer, navigation
 src/components/shared/   Reusable composites (PageHeader, ComingSoon)
 src/config/              Static typed config (site, nav, temporary category copy)
+src/features/marketplace/ Typed mock repository, validation, and marketplace UI
 src/lib/                 Framework-agnostic helpers
 src/lib/supabase/        Browser client, Zod-validated public env, generated Database types
 src/server/db/           Server-only Supabase client (cookie session, anon key, RLS applies)
@@ -75,6 +77,15 @@ e2e/                     Playwright journeys, pending approval
 
 The generated `Database` types live in `src/lib/supabase/` (not `src/server/`) because the browser
 client needs them too.
+
+### BL-003 marketplace boundary
+
+`src/features/marketplace/data/repository.ts` isolates sample data and browser-local persistence.
+The UI does not query Supabase or invent tables absent from the approved schema.
+`data/sample-listings.ts` contains fictional preview content; `schemas/listing.ts` validates demo
+submissions with Zod. Saved items and submissions are local to one browser profile/site origin.
+The App Router remains thin, and the existing Supabase clients and migrations are unchanged.
+See [`marketplace-ui.md`](marketplace-ui.md) for the replacement boundary and test instructions.
 
 Naming: kebab-case files, PascalCase components, named exports (except Next.js special files).
 

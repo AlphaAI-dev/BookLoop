@@ -38,7 +38,7 @@ export function SavedMarketplace() {
   }, []);
 
   return (
-    <main className="page-container min-h-[60vh] pb-20">
+    <div className="page-container min-h-[60vh] pb-20">
       <Link href="/browse" className="mt-8 inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
         <ChevronLeft aria-hidden="true" className="size-4" /> Browse resources
       </Link>
@@ -64,6 +64,6 @@ export function SavedMarketplace() {
           <div className="grid items-stretch gap-5 sm:grid-cols-2 xl:grid-cols-3">{savedListings.map((listing) => <ListingCard key={listing.slug} listing={listing} />)}</div>
         </>
       )}
-    </main>
+    </div>
   );
 }

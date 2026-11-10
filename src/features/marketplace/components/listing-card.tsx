@@ -7,18 +7,12 @@ import { useState, useSyncExternalStore } from "react";
 import { resourceCategories } from "@/config/categories";
 import {
   getSavedIdsSnapshot,
+  getServerSavedIdsSnapshot,
   subscribeToMarketplace,
   toggleSavedListing,
 } from "@/features/marketplace/data/repository";
 import type { Listing } from "@/features/marketplace/types";
-
-function formatPrice(pricePaise: number) {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(pricePaise / 100);
-}
+import { formatPrice } from "@/features/marketplace/lib/format-price";
 
 function getConditionLabel(condition: Listing["condition"]) {
   if (!condition) return undefined;
@@ -35,7 +29,7 @@ export function ListingCard({ listing }: { listing: Listing }) {
   const savedSnapshot = useSyncExternalStore(
     subscribeToMarketplace,
     getSavedIdsSnapshot,
-    getSavedIdsSnapshot,
+    getServerSavedIdsSnapshot,
   );
   const isSaved =
     savedSnapshot.status === "ready" && savedSnapshot.value.includes(listing.slug);
@@ -92,11 +86,9 @@ export function ListingCard({ listing }: { listing: Listing }) {
           </div>
           <p className="shrink-0 text-lg font-bold tracking-tight text-primary">{formatPrice(listing.pricePaise)}</p>
         </div>
-        {listing.isSample && (
-          <span className="mt-4 w-fit rounded-md bg-highlight/30 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-highlight-foreground">
-            Sample listing
-          </span>
-        )}
+        <span className="mt-4 w-fit rounded-md bg-highlight/30 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-highlight-foreground">
+          {listing.isSample ? "Sample listing" : "Local demo listing"}
+        </span>
         {(saveError || savedError) && (
           <p role="status" className="mt-2 text-xs text-destructive">
             {saveError || savedError}

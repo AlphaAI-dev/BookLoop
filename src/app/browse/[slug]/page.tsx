@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "Resource details" };
 
 export default function ListingPage({ params }: { params: Promise<{ slug: string }> }) {
   return (
-    <Suspense fallback={<main className="page-container min-h-[60vh] py-10"><div className="h-80 animate-pulse rounded-3xl bg-muted" /></main>}>
+    <Suspense fallback={<div className="page-container min-h-[60vh] py-10"><div className="h-80 animate-pulse rounded-3xl bg-muted" /></div>}>
       {params.then(({ slug }) => <ListingDetail slug={slug} />)}
     </Suspense>
   );

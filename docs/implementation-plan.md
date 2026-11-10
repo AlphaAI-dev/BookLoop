@@ -4,6 +4,10 @@ The playbook (§9) and the project brief number the phases differently. This pla
 playbook's order, which is the source of truth, and maps the brief's phases onto it. Each phase is
 one or more `feature/*` branches with their own PR into `Develop`.
 
+Owner-approved sequencing: **BL-003 Marketplace UI Shell** follows BL-002 using typed mock
+data, before authentication or database-backed marketplace operations. This is a UI milestone,
+not completion of the later search/listing schema or auth phases.
+
 | Playbook phase | Brief phase(s) | Work | Branch (proposed) | Gate |
 | -------------- | -------------- | ---- | ----------------- | ---- |
 | 0 | — | Repo inspection, branch setup, conventions | `feature/project-foundation` | Clean baseline ✅ |
@@ -61,7 +65,22 @@ Owner actions after merge:
    sets the hosted Auth settings, then runs `npm run supabase:verify`.
 3. Grant the first admin with SQL (see the database doc).
 
-## Next milestone — Phase 3: auth and profiles (`feature/supabase-auth`)
+## BL-003 — Marketplace UI Shell (`feature/marketplace-shell`)
+
+Implemented and verified:
+
+- Search, category/resource-kind filters, cards and listing details.
+- Browser-local saved resources and physical/digital demo submissions with Zod validation.
+- Explicit sample/local-demo labels and persistence limitations.
+- No changes to Supabase clients, database types, migrations or dependencies.
+- `npm run check` passes (lint, typecheck, production build).
+- Dependency-free Chromium checks pass for discovery, filters, detail navigation, saved-item
+  persistence, validation, physical/digital submission persistence, and tablet/mobile navigation.
+
+See [`marketplace-ui.md`](marketplace-ui.md). Owner review and merge into `Develop` are separate
+from implementation and verification.
+
+## Proposed next milestone — Phase 3: auth and profiles (`feature/supabase-auth`)
 
 Signup with email verification, login and logout, `src/proxy.ts` session refresh, and profile
 editing (Zod-validated server actions, avatar upload into the owner's folder).

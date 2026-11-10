@@ -1,6 +1,6 @@
-import type { ListingKind, ResourceCategory } from "@/config/categories";
+import type { ListingKind, resourceCategories } from "@/config/categories";
 
-export type MarketplaceCategory = ResourceCategory["slug"];
+export type MarketplaceCategory = (typeof resourceCategories)[number]["slug"];
 
 export type PhysicalCondition = "new" | "like-new" | "good" | "acceptable";
 

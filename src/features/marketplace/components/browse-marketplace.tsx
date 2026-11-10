@@ -8,6 +8,7 @@ import { resourceCategories } from "@/config/categories";
 import { ListingCard } from "@/features/marketplace/components/listing-card";
 import {
   getListingsSnapshot,
+  getServerListingsSnapshot,
   subscribeToMarketplace,
 } from "@/features/marketplace/data/repository";
 import type { Listing } from "@/features/marketplace/types";
@@ -17,7 +18,7 @@ export function BrowseMarketplace() {
   const listingsSnapshot = useSyncExternalStore(
     subscribeToMarketplace,
     getListingsSnapshot,
-    getListingsSnapshot,
+    getServerListingsSnapshot,
   );
   const [query, setQuery] = useState("");
   const [categorySlug, setCategorySlug] = useState("all");
@@ -48,7 +49,7 @@ export function BrowseMarketplace() {
   }
 
   return (
-    <main className="page-container pb-20">
+    <div className="page-container pb-20">
       <section className="relative isolate mt-8 overflow-hidden rounded-[1.75rem] bg-primary px-6 py-9 text-primary-foreground sm:px-10 sm:py-12 lg:px-14">
         <div aria-hidden="true" className="absolute -right-20 -top-28 -z-10 size-80 rounded-full border-[36px] border-primary-foreground/10" />
         <div aria-hidden="true" className="absolute -bottom-24 right-[24%] -z-10 size-48 rotate-12 rounded-[3rem] border border-primary-foreground/15" />
@@ -145,6 +146,6 @@ export function BrowseMarketplace() {
           </div>
         )}
       </section>
-    </main>
+    </div>
   );
 }

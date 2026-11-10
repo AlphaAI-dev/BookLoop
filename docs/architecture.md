@@ -1,6 +1,7 @@
 # BookLoop architecture
 
-Status: proposed with BL-001 (Phase 1). Changes need project-owner approval (playbook §1, §3).
+Status: proposed with BL-001 (Phase 1), updated in BL-002 (Supabase foundation). Changes need
+project-owner approval (playbook §1, §3).
 
 ## 1. Repository assessment (at BL-001 start)
 
@@ -14,8 +15,8 @@ Status: proposed with BL-001 (Phase 1). Changes need project-owner approval (pla
 | CI                 | None                                                                     |
 | Agent docs         | `BOOKLOOP_TEAM_PLAYBOOK.md` and `CLAUDE.md` were not yet in the repo; added in BL-001 |
 
-Note: the integration branch is named **`Develop`** (capital D) on GitHub, while the playbook
-says `develop`. PRs target `Develop`. The owner may want to rename one of them so they match.
+Note: the integration branch is **`Develop`** (capital D). BL-002 changed the playbook to
+match.
 
 ## 2. Layered architecture
 
@@ -41,7 +42,7 @@ Defence in depth: every protected operation is checked in the service layer **an
 
 ## 3. Folder conventions
 
-Present after BL-001:
+Present after BL-002:
 
 ```
 src/app/                 App Router routes
@@ -50,6 +51,13 @@ src/components/layout/   Header, footer, navigation
 src/components/shared/   Reusable composites (PageHeader, ComingSoon)
 src/config/              Static typed config (site, nav, temporary category copy)
 src/lib/                 Framework-agnostic helpers
+src/lib/supabase/        Browser client, Zod-validated public env, generated Database types
+src/server/db/           Server-only Supabase client (cookie session, anon key, RLS applies)
+supabase/config.toml     Local stack configuration
+supabase/migrations/     Versioned SQL migrations (schema, RLS, storage buckets/policies)
+supabase/seed.sql        Local/demo seed data only
+supabase/tests/database/ pgTAP policy tests (`npm run db:test`)
+scripts/                 Operational scripts (verify-supabase.mjs)
 ```
 
 Added by later phases (create them when first needed, not before):
@@ -57,16 +65,16 @@ Added by later phases (create them when first needed, not before):
 ```
 src/features/<domain>/   Domain UI, hooks, client-side schemas (listings, orders, profile …)
 src/server/<domain>/     Server-only services (pricing, orders, payments, entitlements …)
-src/server/db/           Supabase server/admin client factories, generated DB types
+src/server/db/admin.ts   Service-role client for webhooks/admin workflows (needs review)
+src/server/env.ts        Server-only env validation (service role, Razorpay secrets)
 src/lib/validation/      Shared Zod schemas used on both sides (server is authoritative)
-src/lib/env.ts           Typed, Zod-validated environment access (BL-002)
-src/proxy.ts             Supabase session refresh (Next 16 "proxy" = former middleware)
-supabase/migrations/     Versioned SQL migrations
-supabase/seed.sql        Local/demo seed data only
-supabase/tests/          pgTAP RLS tests (`supabase test db`), pending approval
+src/proxy.ts             Supabase session refresh (Next 16 "proxy" = former middleware), with auth
 tests/ or *.test.ts      Unit/integration tests, pending framework approval
 e2e/                     Playwright journeys, pending approval
 ```
+
+The generated `Database` types live in `src/lib/supabase/` (not `src/server/`) because the browser
+client needs them too.
 
 Naming: kebab-case files, PascalCase components, named exports (except Next.js special files).
 
@@ -96,6 +104,17 @@ Naming: kebab-case files, PascalCase components, named exports (except Next.js s
 | `typescript` 5, `@types/*` | dev | Strict TypeScript |
 | `eslint` 9, `eslint-config-next` | dev | Linting |
 
+### Installed in BL-002
+
+| Package | Kind | Why |
+| ------- | ---- | --- |
+| `@supabase/supabase-js` 2.118, `@supabase/ssr` 0.12 | runtime | Locked: Supabase DB/Auth/Storage clients with cookie sessions for the App Router |
+| `zod` 4.6 | runtime | Locked: validation (env now; inputs from Phase 3) |
+| `supabase` 2.122.0 (CLI, exact pin) | dev | Migrations, local stack, pgTAP runner, type generation |
+
+`server-only` is handled natively by Next.js (`import "server-only"` needs no package). pgTAP
+runs inside the local Supabase Postgres, so it adds no npm dependency.
+
 `npm audit` reports 8 moderate advisories, all in the ESLint/typescript-eslint dev toolchain pulled
 in by `eslint-config-next`. They don't ship to production. The only fix npm offers is
 `--force` (a breaking downgrade), so the advisories are left in place until upstream releases a fix.
@@ -104,11 +123,7 @@ in by `eslint-config-next`. They don't ship to production. The only fix npm offe
 
 | Package | Phase | Purpose | Status |
 | ------- | ----- | ------- | ------ |
-| `zod` | 2 | Input and env validation | Locked decision |
-| `@supabase/supabase-js`, `@supabase/ssr` | 2 | DB/Auth/Storage clients with cookie sessions | Locked decision |
-| `server-only` | 2 | Build-time guard against importing server modules into client code | Small, recommended |
-| `supabase` (CLI, dev) | 2 | Migrations, local stack, type generation, `supabase test db` | Required by migration policy |
-| `vitest` (dev) | 2 | Unit tests for business logic (pricing, state machines, signatures) | **Needs approval** |
+| `vitest` (dev) | 3 | Unit tests for business logic (pricing, state machines, signatures) | **Needs approval** |
 | `@playwright/test` (dev) | 4+ | End-to-end journeys and responsive checks | **Needs approval** |
 | `react-hook-form`, `@hookform/resolvers` | 5 | Listing forms with Zod schemas | **Needs approval** (optional) |
 | `razorpay` (Node SDK) | 7 | Server-side order creation. Signature checks use `node:crypto` HMAC | Candidate; **needs approval** |

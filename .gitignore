@@ -12,22 +12,47 @@
 
 # testing
 /coverage
+/test-results/
+/playwright-report/
+/blob-report/
 
 # next.js
 /.next/
 /out/
+/.turbo/
 
 # production
 /build
+/dist/
 
 # misc
 .DS_Store
+Thumbs.db
 *.pem
+*.key
+*.p12
+*.pfx
+*.swp
+*.swo
+*~
+/.idea/
 
-# Local agent memory is not part of the application or its PRs.
-/.agents/memory/
+# Replit/agent state and package/tool caches; keep .replit versioned.
+/.agents/
+/.local/
+/.cache/
+/.upm/
+/.npm/
+/.eslintcache
+
+# Temporary and generated deliverables, not application source.
+/tmp/
+/temp/
+/generated-artifacts/
 
 # debug
+*.log
+/logs/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -36,7 +61,7 @@ yarn-error.log*
 # env files — real values live in .env.local / Replit Secrets, never in Git.
 # Only the placeholder template is committed.
 .env*
-!.env.example
+!/.env.example
 
 # vercel
 .vercel

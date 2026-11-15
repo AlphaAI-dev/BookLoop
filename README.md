@@ -34,15 +34,14 @@ Locked decisions and team rules are in [`BOOKLOOP_TEAM_PLAYBOOK.md`](BOOKLOOP_TE
 
 ## Prerequisites
 
-- Node.js **20.9 or later** (developed on Node 22)
+- Node.js **24 recommended**, matching Replit and CI (package minimum: 20.9)
 - npm (the repository uses `package-lock.json`; do not mix package managers)
 - Docker, only if you want to run the local Supabase stack (migrations and policy tests)
 
 ## Getting started
 
 ```bash
-npm install
-cp .env.example .env.local   # fill in values when Supabase/Razorpay are set up
+npm ci
 npm run dev
 ```
 
@@ -50,6 +49,8 @@ Open <http://localhost:3000>.
 
 Pages that don't touch Supabase run without `.env.local`. Anything that creates a Supabase client
 needs `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (see below).
+For Supabase development, copy `.env.example` to the ignored `.env.local` and replace only the
+values needed for that work. Leave the tracked template as placeholders.
 
 ### Marketplace preview (BL-003)
 
@@ -88,8 +89,11 @@ storage policies and the full workflow.
 ### On Replit
 
 1. Import this GitHub repository into Replit and check out the agreed branch.
-2. Add the variable names from `.env.example` under **Secrets** (never in files).
-3. Run `npm install`, then `npm run dev` for preview.
+2. Run `npm ci` to install the versions recorded in `package-lock.json`.
+3. Use the Run button's managed workflow: `npm run dev -- --hostname 0.0.0.0 --port 5000`.
+   Unlike the local default of port 3000, this uses the preview port configured in `.replit`.
+   The marketplace UI needs no secrets. When working on Supabase, provide only the required
+   variables from `.env.example` through Replit Secrets; never commit real values.
 4. For deployment: build command `npm run build`, run command `npm run start`.
    `next start` reads the `PORT` environment variable that Replit provides.
 
@@ -118,6 +122,7 @@ see the open decisions in [`docs/implementation-plan.md`](docs/implementation-pl
 ```
 src/
   app/                 Routes (App Router): pages, layouts, route handlers
+  features/marketplace/ Marketplace UI, typed fixtures, local repository and validation
   components/
     ui/                shadcn/ui primitives (generated/vendored, keep unmodified where possible)
     layout/            App shell: header, footer, navigation
@@ -132,7 +137,7 @@ supabase/
   migrations/          Versioned SQL migrations (schema, RLS, storage)
   seed.sql             Local-only demo data
   tests/database/      pgTAP policy tests
-scripts/               Operational scripts (connection verification)
+scripts/               Connection verification and Chromium browser smoke checks
 ```
 
 More directories are added as features land; see [`docs/architecture.md`](docs/architecture.md).
@@ -144,10 +149,14 @@ Replit Secrets. Never commit secrets, and never give a secret a `NEXT_PUBLIC_` p
 
 ## Contributing
 
-- Work on a `feature/<name>` or `fix/<name>` branch created from the latest `Develop`.
+- Work on a `feature/<name>`, `fix/<name>` or `chore/<name>` branch from the latest `Develop`.
 - Open a pull request into `Develop`; the project owner reviews and merges.
 - Run `npm run check` before opening a PR and report the actual results.
 - Database changes only through versioned migrations in `supabase/migrations/`.
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the branch workflow, repository-hygiene rules and
+review checklist. The checks-only [GitHub workflow](.github/workflows/check.yml) runs the same
+`npm run check` on pull requests into `Develop`/`main` and pushes to `Develop`; it does not deploy.
 
 ## License
 
